@@ -59,5 +59,52 @@ namespace MessageBoard.Controllers
       return await query.ToListAsync();
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, Message message, string userName)
+    {
+      if ((id != message.MessageId) || (userName != message.UserName))
+      {
+        return BadRequest();
+      }
+      _db.Entry(message).State = EntityState.Modified;
+      try
+      {
+        await _db.SaveChangesAsync();
+      }
+      catch (DbUpdateConcurrencyException)
+      {
+        if(!MessageExists(id))
+        {
+          return NotFound();
+        }
+        else
+        {
+          throw;
+        }
+      }
+      return NoContent();
+    }
+
+      private bool MessageExists(int id)
+      {
+        return _db.Messages.Any(e => e.MessageId == id);
+      }
+
+      [HttpDelete("{userName}/{id}")]
+      public async Task<IActionResult> DeleteMessage(int id)
+      {
+        var message = await _db.Messages.FindAsync(id);
+        if(message == null)
+        {
+          return NotFound();
+        }
+
+        _db.Messages.Remove(message);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    
+
+      }
+
   }
 }
