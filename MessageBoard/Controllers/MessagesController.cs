@@ -48,7 +48,7 @@ namespace MessageBoard.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Message>>> Get(string group)
+    public async Task<ActionResult<IEnumerable<Message>>> Get(string group, DateTime postTime, string userName)
     {
       var query = _db.Messages.AsQueryable();
 
@@ -56,13 +56,24 @@ namespace MessageBoard.Controllers
       {
         query = query.Where(entry => entry.Group == group);
       }
+      
+      if (userName != null)
+      {
+        query = query.Where(entry => entry.UserName == userName);
+      }
+
+      // if (postTime.ToString() != "00010101T000000")
+      // {
+      //   query = query.Where(entry => entry.PostTime == postTime);
+      // }
+            
       return await query.ToListAsync();
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{userName}/{id}")]
     public async Task<IActionResult> Put(int id, Message message, string userName)
     {
-      if ((id != message.MessageId) || (userName != message.UserName))
+      if ((id != message.MessageId) && (userName != message.UserName))
       {
         return BadRequest();
       }
